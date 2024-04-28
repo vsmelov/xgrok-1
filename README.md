@@ -1,3 +1,18 @@
+# Run
+
+```bash
+apt install nano
+git clone https://github.com/vsmelov/xgrok-1.git
+cd xgrok-1
+pip install -r requirements.txt
+pip install -U "jax[cuda12_pip]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+pip install huggingface_hub[hf_transfer]
+huggingface-cli download xai-org/grok-1 --repo-type model --include ckpt-0/* --local-dir checkpoints --local-dir-use-symlinks False
+ls checkpoints
+
+python run.py
+```
+
 # Grok-1
 
 This repository contains JAX example code for loading and running the Grok-1 open-weights model.
