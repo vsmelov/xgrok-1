@@ -77,6 +77,8 @@ def get_reply(gen, inp):
 
 
 process_scope = {}
+logging.info('Loading model...')
+process_scope['inference_runner'] = load_model()
 
 
 @app.post("/inference/")
@@ -88,6 +90,7 @@ def do_inference(request: TextRequest):
         if 'inference_runner' not in process_scope:
             logging.info('Loading model...')
             process_scope['inference_runner'] = load_model()
+
         inference_runner = process_scope['inference_runner']
 
         try:
