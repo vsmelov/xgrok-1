@@ -7,6 +7,8 @@ import time
 from model import LanguageModelConfig, TransformerConfig, QuantizedWeight8bit as QW8Bit
 from runners import InferenceRunner, ModelRunner, sample_from_model
 
+logging.basicConfig(level=logging.INFO)
+
 
 CKPT_PATH = "./checkpoints/"
 
@@ -78,7 +80,7 @@ def get_reply(gen, inp):
 
 process_scope = {}
 logging.info('Loading model...')
-process_scope['inference_runner'] = load_model()
+process_scope['gen'] = load_model()
 
 
 @app.post("/inference/")
@@ -86,26 +88,20 @@ def do_inference(request: TextRequest):
     logging.info(f"Received request: {request}")
     with model_lock:
         start_time = time.time()
-
-        if 'inference_runner' not in process_scope:
-            logging.info('Loading model...')
-            process_scope['inference_runner'] = load_model()
-
-        inference_runner = process_scope['inference_runner']
+        gen = process_scope['gen']
 
         try:
             # Assuming the model's inference method and other details
             output = sample_from_model(
-                inference_runner,
+                gen,
                 request.text,
                 max_len=request.max_new_tokens,
                 temperature=request.temperature,
             )
-            response = inference_runner.tokenizer.decode(output)
             duration = time.time() - start_time
             logging.info(f'Inference took {duration:.2f} seconds')
-            logging.info(f"Response: {response}")
-            return {"response": response, "duration": duration}
+            logging.info(f"Response: {output}")
+            return {"response": output, "duration": duration}
         except Exception as e:
             logging.exception(f'Error occurred: {e}')
             raise HTTPException(status_code=500, detail=str(e))
@@ -113,5 +109,4 @@ def do_inference(request: TextRequest):
 
 if __name__ == "__main__":
     import uvicorn
-    logging.basicConfig(level=logging.INFO)
     uvicorn.run(app, host="0.0.0.0", port=8000)
