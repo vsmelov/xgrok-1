@@ -564,6 +564,16 @@ class InferenceRunner:
                         all_tokens.append(int(prev_token.token_id[i][0]))
                         cont = len(all_tokens) < requests[i].max_len
 
+                        if '=' * 10 in self.tokenizer.decode(all_tokens):
+                            print("Detected end of text because of '=========='")
+                            output_str = self.tokenizer.decode(all_tokens)
+                            requests[i] = None
+                            free_slots.append(i)
+                            all_tokens = []
+                            settings = settings._replace(active=settings.active.at[i].set(0))
+                            yield output_str
+                            return
+
                         if not cont:
                             output_str = self.tokenizer.decode(all_tokens)
                             requests[i] = None
